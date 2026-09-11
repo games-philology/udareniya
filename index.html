@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Ударения ЕГЭ</title>
-  <link rel="manifest" href='data:application/json,{"name":"Ударения ЕГЭ","short_name":"Ударения","start_url":"/","display":"standalone","background_color":"#d2c4b0","theme_color":"#4a5a3a","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22%3E%3Crect width=%22512%22 height=%22512%22 fill=%22%234a5a3a%22/%3E%3Ctext x=%22256%22 y=%22320%22 font-size=%22320%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Georgia%22%3E%D0%A3%3C/text%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml"}]}' />
+  <link rel="manifest" href='data:application/json,{"name":"Ударения ЕГЭ","short_name":"Ударения","start_url":"/","display":"standalone","background_color":"#8b6b47","theme_color":"#4a5a3a","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22%3E%3Crect width=%22512%22 height=%22512%22 fill=%22%234a5a3a%22/%3E%3Ctext x=%22256%22 y=%22320%22 font-size=%22320%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Georgia%22%3E%D0%A3%3C/text%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml"}]}' />
   <script>
-    // Определяем устройство при загрузке и фиксируем класс на body
+    // Определяем устройство при загрузке и фиксируем класс на html
     (function() {
       var w = window.innerWidth;
       var cls = w < 650 ? 'is-smartphone' : (w <= 1024 ? 'is-tablet' : 'is-desktop');
@@ -27,17 +27,17 @@
     }
     body {
       font-family: 'Georgia', 'Times New Roman', serif;
-      background: #d2c4b0;
+      background: #8b6b47; /* тёмное дерево */
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 8px;
     }
     .game-container {
-      background: #f0e6d6;
+      background: #e8c88a; /* жёлтое дерево */
       border-radius: 28px;
       padding: 16px 10px 18px;
-      box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.2);
       max-width: 1000px;
       width: 100%;
       height: 100%;
@@ -307,7 +307,6 @@
       pointer-events: none;
     }
 
-    /* Контейнер для счётчиков — оба под центральной стопкой */
     .counters-container {
       display: flex;
       flex-direction: column;
@@ -537,8 +536,8 @@
     html.is-smartphone .column-label { font-size: 0.75rem; margin-bottom: 1px; }
     html.is-smartphone .column-label.wrong, html.is-smartphone .column-label.right { font-size: 0.85rem; letter-spacing: 1px; }
     html.is-smartphone .stack { padding: 1px; }
-    html.is-smartphone .card { max-width: 170px; padding: 6px 4px; }
-    html.is-smartphone .stack-card { max-width: 120px; margin: 1px 0; }
+    html.is-smartphone .card { max-width: 180px; padding: 6px 4px; }
+    html.is-smartphone .stack-card { max-width: 125px; margin: 1px 0; }
     html.is-smartphone .card .hint { font-size: 0.7rem; top: 16%; }
     html.is-smartphone .card .hint.small-hint { font-size: 0.65rem; }
     html.is-smartphone .card .variants-col { gap: 0.9rem; margin-top: 0.9rem; }
@@ -555,6 +554,20 @@
     html.is-smartphone .final-screen .final-btn { font-size: 0.9rem; padding: 6px 16px; }
     html.is-smartphone .coffee-overlay .coffee-emoji { font-size: 3rem; }
     html.is-smartphone .coffee-overlay .coffee-btn { font-size: 0.9rem; padding: 6px 16px; }
+
+    /* CSS-поворот как фолбэк (добавляется классом при отсутствии поддержки API) */
+    html.is-smartphone.css-rotate .game-container {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 100vh;
+      height: 100vw;
+      transform: translate(-50%, -50%) rotate(90deg);
+      transform-origin: center center;
+      max-width: none;
+      max-height: none;
+      border-radius: 0;
+    }
   </style>
 </head>
 <body>
@@ -641,10 +654,13 @@
   })();
 
   // ============================================================
-  // FULLSCREEN — только для смартфонов
+  // ОРИЕНТАЦИЯ И FULLSCREEN для смартфона
   // ============================================================
   (function() {
     const isSmartphone = document.documentElement.classList.contains('is-smartphone');
+    if (!isSmartphone) return;
+
+    const htmlEl = document.documentElement;
     const exitBtn = document.getElementById('exitFullscreenBtn');
 
     function requestFullscreen() {
@@ -668,21 +684,56 @@
       }
     }
 
-    if (isSmartphone) {
-      setTimeout(requestFullscreen, 300);
-      document.addEventListener('click', function handler() {
+    function tryLockLandscape() {
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(() => {
+          // не поддерживается — используем CSS-поворот
+          htmlEl.classList.add('css-rotate');
+        });
+      } else {
+        // API не поддерживается — используем CSS-поворот
+        htmlEl.classList.add('css-rotate');
+      }
+    }
+
+    function syncCssRotate() {
+      // Если CSS-поворот используется — снимаем его при физической альбомной ориентации
+      if (!htmlEl.classList.contains('css-rotate')) return;
+      if (window.matchMedia('(orientation: landscape)').matches) {
+        htmlEl.classList.add('css-rotate-off');
+      } else {
+        htmlEl.classList.remove('css-rotate-off');
+      }
+    }
+
+    // Стиль для отключения поворота
+    const styleEl = document.createElement('style');
+    styleEl.textContent = 'html.is-smartphone.css-rotate.css-rotate-off .game-container { position: relative; top: auto; left: auto; width: 100vw; height: 100vh; transform: none; transform-origin: initial; }';
+    document.head.appendChild(styleEl);
+
+    // При старте — fullscreen и попытка блокировки
+    setTimeout(function() {
+      requestFullscreen();
+      tryLockLandscape();
+      setTimeout(syncCssRotate, 300);
+    }, 300);
+
+    // При изменении ориентации — перерисовка + синхронизация
+    window.addEventListener('orientationchange', function() {
+      setTimeout(function() {
+        syncCssRotate();
         if (!document.fullscreenElement && !document.webkitFullscreenElement) {
           requestFullscreen();
         }
-        document.removeEventListener('click', handler);
-      });
-      exitBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        exitFullscreen();
-      });
-    } else {
-      exitBtn.style.display = 'none';
-    }
+      }, 300);
+    });
+
+    window.addEventListener('resize', syncCssRotate);
+
+    exitBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      exitFullscreen();
+    });
   })();
 
   // ============================================================
@@ -1040,8 +1091,8 @@
     if (letters <= 7) return '1.6rem';
     if (letters <= 9) return '1.5rem';
     if (letters <= 10) return '1.35rem';
-    if (letters <= 13) return '1.3rem'; // было 1.35, уменьшили на 0.05
-    return '1.1rem'; // было 1.15, уменьшили на 0.05
+    if (letters <= 13) return '1.25rem'; // было 1.3, минус 0.05
+    return '1.05rem'; // было 1.1, минус 0.05
   }
 
   function updateRemaining() {
@@ -1161,8 +1212,8 @@
       else if (maxLength <= 7) fontSize = '1.6rem';
       else if (maxLength <= 9) fontSize = '1.5rem';
       else if (maxLength <= 10) fontSize = '1.35rem';
-      else if (maxLength <= 13) fontSize = '1.3rem';
-      else fontSize = '1.1rem';
+      else if (maxLength <= 13) fontSize = '1.25rem';
+      else fontSize = '1.05rem';
     }
 
     const variantsCol = document.createElement('div');
@@ -1325,3 +1376,4 @@
 </script>
 </body>
 </html>
+

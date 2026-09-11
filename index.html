@@ -835,7 +835,7 @@
     { variants: ["нарвалА", "нарвАла"], correct: 0, bothOk: false },
     { variants: ["начАть", "нАчать"], correct: 0, bothOk: false },
     { variants: ["нАчал", "начАл"], correct: 0, bothOk: false },
-    { variants: ["началА", "нАчала"], correct: 0, bothOk: false },
+    { variants: ["началА", "нАчала"], correct: 0, bothOk: false, hint: "(она)" },
     { variants: ["нАчали", "начАли"], correct: 0, bothOk: false },
     { variants: ["облегчИть", "облЕгчить"], correct: 0, bothOk: false },
     { variants: ["облегчИт", "облЕгчит"], correct: 0, bothOk: false },
@@ -1067,7 +1067,7 @@
     if (lower.includes('низвед') || lower.includes('прозорл') || lower.includes('повтор')) {
       return '1.1rem';
     }
-    if (lower === 'повторит') return '1.7rem';
+    if (lower === 'повторит') return '1.9rem';
     if (lower === 'прозорлива') return '1.6rem';
     const letters = text.replace(/[^а-яёa-z]/gi, '').length;
     if (letters <= 5) return '1.9rem';
@@ -1187,7 +1187,7 @@
     } else if (isSpecific) {
       let specificSize = '1.5rem';
       variants.forEach(v => {
-        if (v.toLowerCase() === 'повторит') specificSize = '1.7rem';
+        if (v.toLowerCase() === 'повторит') specificSize = '1.9rem';
         if (v.toLowerCase() === 'прозорлива') specificSize = '1.6rem';
       });
       fontSize = specificSize;

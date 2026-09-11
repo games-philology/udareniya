@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Ударения ЕГЭ</title>
+  <link rel="manifest" href='data:application/json,{"name":"Ударения ЕГЭ","short_name":"Ударения","start_url":"/","display":"standalone","background_color":"#d2c4b0","theme_color":"#4a5a3a","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22%3E%3Crect width=%22512%22 height=%22512%22 fill=%22%234a5a3a%22/%3E%3Ctext x=%22256%22 y=%22320%22 font-size=%22320%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Georgia%22%3E%D0%A3%3C/text%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml"}]}' />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      margin: 0;
+    }
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: #d2c4b0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 8px;
+    }
+    .game-container {
+      background: #f0e6d6;
+      border-radius: 28px;
+      padding: 16px 10px 18px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+      max-width: 1000px;
+      width: 100%;
+      height: 100%;
+      max-height: 95vh;
+      position: relative;
+      border: 5px solid #4a5a3a;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .watermark {
+      position: absolute;
+      bottom: 3px;
+      right: 10px;
+      font-size: 0.7rem;
+      color: rgba(0,0,0,0.3);
+      font-family: 'Georgia', serif;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .game-title {
+      text-align: center;
+      font-size: 3.2rem;
+      font-weight: 700;
+      font-family: 'Georgia', serif;
+      color: #4a5a3a;
+      margin-bottom: 14px;
+      letter-spacing: 2px;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.05);
+      flex-shrink: 0;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .ctrl-btn {
+      background: rgba(255,255,255,0.7);
+      border: 2px solid #4a5a3a;
+      border-radius: 30px;
+      padding: 2px 14px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: 0.2s;
+      color: #4a5a3a;
+      font-weight: 600;
+      font-family: 'Georgia', serif;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      position: relative;
+    }
+    .ctrl-btn:hover {
+      background: #fff;
+      transform: scale(1.02);
+    }
+    .ctrl-btn.off {
+      opacity: 0.5;
+    }
+    .ctrl-btn.sfx-off .sound-icon::after {
+      display: none;
+    }
+
+    .exit-fullscreen {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #4a5a3a;
+      cursor: pointer;
+      z-index: 100;
+      display: none;
+      line-height: 1;
+      text-shadow: 0 0 4px rgba(255,255,255,0.8);
+      transition: transform 0.2s;
+    }
+    .exit-fullscreen:hover {
+      transform: scale(1.1);
+    }
+
+    .table {
+      display: flex;
+      justify-content: space-between;
+      align-items: stretch;
+      gap: 4px;
+      flex: 1;
+      min-height: 0;
+      margin-top: 10px;
+    }
+    .column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      position: relative;
+      padding: 0;
+    }
+    .column-label {
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+      font-family: 'Georgia', serif;
+      line-height: 1.2;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .column-label.wrong {
+      color: #c0392b;
+      font-size: 1.6rem;
+      letter-spacing: 2px;
+    }
+    .column-label.right {
+      color: #27ae60;
+      font-size: 1.6rem;
+      letter-spacing: 2px;
+    }
+
+    .stack {
+      width: 100%;
+      flex: 1;
+      padding: 4px;
+      position: relative;
+      will-change: transform;
+      backface-visibility: hidden;
+      contain: layout;
+      overflow: visible;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      box-shadow: none;
+    }
+    .stack-center {
+      background: none;
+      border: none;
+      padding-bottom: 0;
+      overflow: visible;
+    }
+
+    .stack-card {
+      background: #ffffff;
+      border-radius: 10px;
+      border: 2px solid #b8a68a;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+      font-family: 'Georgia', serif;
+      width: 75%;
+      aspect-ratio: 5 / 7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8px 6px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #1a1a4a;
+      word-break: keep-all;
+      white-space: normal;
+      overflow: hidden;
+      transition: none;
+      max-width: 112px;
+      margin: 4px 0;
+    }
+    .stack-card .correct-word { color: #27ae60; }
+    .stack-card .wrong-word { color: #c0392b; }
+
+    .card-wrapper {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 10px;
+      border: 2px solid #b8a68a;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+      font-family: 'Georgia', serif;
+      width: 100%;
+      max-width: 150px;
+      aspect-ratio: 5 / 7;
+      padding: 12px 6px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: default;
+      transition: none;
+      will-change: transform;
+      backface-visibility: hidden;
+      overflow: visible;
+    }
+    .card .hint {
+      font-size: 1.2rem;
+      font-style: italic;
+      color: #6a5a4a;
+      text-align: center;
+      padding: 0;
+      opacity: 0.9;
+      width: 100%;
+      font-family: 'Georgia', serif;
+      word-break: keep-all;
+      border-bottom: none;
+      margin-bottom: 0;
+      position: absolute;
+      top: 22%;
+      left: 0;
+      right: 0;
+      pointer-events: none;
+      transform: translateY(-50%);
+    }
+    .card .hint.small-hint {
+      font-size: 1.15rem;
+    }
+    .card .variants-col {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      gap: 1.8rem;
+      justify-content: center;
+      align-items: center;
+      flex: 1;
+      padding-top: 0;
+      margin-top: 1.2rem;
+    }
+    .card .variant-btn {
+      width: 100%;
+      padding: 4px 2px;
+      border: none;
+      outline: none;
+      border-radius: 4px;
+      background: none !important;
+      font-weight: 700;
+      cursor: pointer;
+      transition: none;
+      text-align: center;
+      color: #1a1a4a;
+      font-family: 'Georgia', serif;
+      word-break: keep-all;
+      white-space: normal;
+      overflow: hidden;
+      letter-spacing: 0.3px;
+      line-height: 1.3;
+      font-size: 1.1rem;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .card .variant-btn:hover {
+      background: none !important;
+    }
+    .card .variant-btn:active {
+      transform: scale(0.95);
+    }
+    .card .variant-btn.correct {
+      color: #27ae60 !important;
+      pointer-events: none;
+    }
+    .card .variant-btn.wrong {
+      color: #c0392b !important;
+      pointer-events: none;
+    }
+
+    .counters-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: auto;
+      padding: 4px 16px;
+      gap: 10px;
+      flex-wrap: nowrap;
+      border-top: none;
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(245, 239, 230, 0.85);
+      border-radius: 30px;
+      height: 30px;
+      max-width: 200px;
+      border: 1px solid rgba(74, 90, 58, 0.25);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .error-counter {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #4a5a3a;
+      font-family: 'Georgia', serif;
+      text-align: center;
+      text-shadow: 0 1px 2px rgba(255,255,255,0.2);
+      white-space: nowrap;
+      background: none;
+      padding: 0;
+    }
+    .error-counter span { background: none; padding: 0; }
+
+    .remaining-counter {
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #4a5a3a;
+      font-family: 'Georgia', serif;
+      margin-top: 2px;
+      padding: 4px 16px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 30px;
+      border: 1px solid rgba(74, 90, 58, 0.25);
+      width: 100%;
+      max-width: 200px;
+      margin-left: auto;
+      margin-right: auto;
+      flex-shrink: 0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .flying {
+      position: fixed;
+      z-index: 1000;
+      pointer-events: none;
+      border-radius: 10px;
+      background: #ffffff;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #1a1a4a;
+      border: 2px solid #b8a68a;
+      font-family: 'Georgia', serif;
+      word-break: keep-all;
+      white-space: normal;
+      overflow: hidden;
+      text-align: center;
+      padding: 6px 10px;
+      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
+      aspect-ratio: 5 / 7;
+      box-sizing: border-box;
+    }
+
+    .final-screen {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px);
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 999;
+      color: #27ae60;
+      text-align: center;
+      padding: 20px;
+    }
+    .final-screen .final-title {
+      font-size: 2.8rem;
+      font-weight: 700;
+      font-family: 'Georgia', serif;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      margin-bottom: 4px;
+      color: #27ae60;
+      line-height: 1.2;
+    }
+    .final-screen .final-subtitle {
+      font-size: 2rem;
+      font-weight: 400;
+      font-family: 'Georgia', serif;
+      color: #fff;
+      max-width: 90%;
+      margin: 8px auto 0;
+      line-height: 1.3;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    .final-screen .final-emoji { font-size: 4rem; margin: 4px 0 10px; display: inline-block; }
+    .final-screen .final-btn {
+      margin-top: 20px;
+      padding: 10px 30px;
+      font-size: 1.2rem;
+      background: #4a5a3a;
+      border: none;
+      border-radius: 60px;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      transition: 0.2s;
+      font-family: 'Georgia', serif;
+    }
+    .final-screen .final-btn:hover { background: #3a4a2a; transform: scale(1.05); }
+
+    .confetti-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 1000;
+      overflow: hidden;
+    }
+    .confetti-piece {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      opacity: 0.9;
+      animation: confettiFall linear infinite;
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0.2; }
+    }
+
+    .coffee-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      flex-direction: column;
+    }
+    .coffee-overlay.show { display: flex; }
+    .coffee-emoji { 
+      font-size: 6rem; 
+      animation: steam 2s infinite alternate;
+    }
+    @keyframes steam {
+      0% { transform: translateY(0) scale(1); opacity: 0.8; }
+      100% { transform: translateY(-20px) scale(1.1); opacity: 1; }
+    }
+    .coffee-overlay .coffee-btn {
+      margin-top: 20px;
+      padding: 10px 30px;
+      font-size: 1.2rem;
+      background: #4a5a3a;
+      border: none;
+      border-radius: 60px;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      transition: 0.2s;
+      font-family: 'Georgia', serif;
+    }
+    .coffee-overlay .coffee-btn:hover { background: #3a4a2a; transform: scale(1.05); }
+
+    /* ===== АДАПТИВНОСТЬ ===== */
+
+    /* ПК и ноутбуки */
+    @media (min-width: 1025px) {
+      .game-container { max-height: 90vh; padding: 20px 12px 24px; }
+      .table { gap: 4px; }
+      .card { max-width: 230px; }
+      .stack-card { max-width: 175px; }
+      .card { padding: 20px 16px; }
+      .card .hint { font-size: 1.4rem; top: 22%; }
+      .card .hint.small-hint { font-size: 1.35rem; }
+      .card .variants-col { gap: 2.8rem; margin-top: 1.5rem; }
+      .card .variant-btn { font-size: 1.3rem; }
+      .stack-card { font-size: 0.85rem; padding: 10px 8px; }
+      .column-label { font-size: 1.6rem; }
+      .column-label.wrong, .column-label.right { font-size: 1.8rem; }
+      .game-title { font-size: 3.6rem; }
+      .controls { gap: 14px; margin-bottom: 20px; }
+      .ctrl-btn { font-size: 0.9rem; padding: 4px 18px; }
+      .exit-fullscreen { display: none !important; }
+    }
+
+    /* Планшеты (650–1024px) */
+    @media (min-width: 650px) and (max-width: 1024px) {
+      .game-container { max-height: 92vh; padding: 14px 8px; }
+      .table { gap: 1px; }
+      .card { max-width: 250px; }
+      .stack-card { max-width: 190px; }
+      .card .hint { font-size: 1.3rem; top: 22%; }
+      .card .hint.small-hint { font-size: 1.25rem; }
+      .card .variants-col { gap: 2.4rem; margin-top: 1.5rem; }
+      .card .variant-btn { font-size: 1.3rem; }
+      .stack-card { font-size: 0.8rem; }
+      .game-title { font-size: 2.8rem; }
+      .exit-fullscreen { display: none !important; }
+    }
+
+    /* Смартфоны (< 650px) */
+    @media (max-width: 649px) {
+      .exit-fullscreen { display: block; font-size: 1.4rem; top: 8px; right: 12px; }
+      .table { gap: 0.5px; }
+      @media (orientation: portrait) {
+        .game-container {
+          transform: rotate(90deg) scale(0.85);
+          transform-origin: center center;
+          width: 100vh;
+          height: 100vw;
+          max-width: none;
+          max-height: none;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(90deg) scale(0.85);
+          border-radius: 28px;
+        }
+        .exit-fullscreen { top: 20px; right: 30px; font-size: 1.6rem; }
+        body { overflow: hidden; }
+      }
+      .game-container { padding: 8px 6px 10px; border-width: 3px; max-height: 100vh; }
+      .game-title { font-size: 1.8rem; margin-bottom: 8px; }
+      .controls { gap: 6px; margin-bottom: 8px; }
+      .ctrl-btn { font-size: 0.65rem; padding: 2px 10px; }
+      .table { gap: 0.5px; margin-top: 4px; }
+      .column-label { font-size: 1.0rem; margin-bottom: 3px; }
+      .column-label.wrong, .column-label.right { font-size: 1.1rem; }
+      .stack { padding: 2px; }
+      .card { max-width: 145px; padding: 8px 4px; }
+      .stack-card { max-width: 110px; margin: 2px 0; }
+      .card .hint { font-size: 0.9rem; top: 20%; }
+      .card .hint.small-hint { font-size: 0.85rem; }
+      .card .variants-col { gap: 1.2rem; margin-top: 1rem; }
+      .card .variant-btn { font-size: 0.9rem; padding: 2px 1px; line-height: 1.2; }
+      .counters-row { height: 24px; bottom: 2px; padding: 2px 12px; max-width: 160px; }
+      .error-counter { font-size: 0.7rem; }
+      .remaining-counter { font-size: 0.9rem; max-width: 160px; padding: 2px 12px; }
+      .stack-card { font-size: 0.6rem; padding: 6px 4px; }
+      .flying { font-size: 0.7rem; padding: 4px 6px; }
+      .final-screen .final-title { font-size: 1.8rem; }
+      .final-screen .final-subtitle { font-size: 1.4rem; }
+      .final-screen .final-emoji { font-size: 2.5rem; }
+      .final-screen .final-btn { font-size: 1rem; padding: 6px 16px; }
+      .coffee-overlay .coffee-emoji { font-size: 3rem; }
+      .coffee-overlay .coffee-btn { font-size: 1rem; padding: 6px 16px; }
+    }
+  </style>
+</head>
+<body>
+<div class="game-container" id="app">
+  <div class="watermark">&copy; Анна Сазонова, 2026</div>
+  <div class="exit-fullscreen" id="exitFullscreenBtn">✕</div>
+  <div class="game-title">Ударения</div>
+  <div class="controls">
+    <button class="ctrl-btn" id="sfxToggle"><span class="sound-icon">🔊</span> Звук</button>
+    <button class="ctrl-btn" id="pauseBtn">☕ Пауза</button>
+    <button class="ctrl-btn" id="restartBtnTop">🔄 Играть снова</button>
+  </div>
+  <div class="table" id="gameTable">
+    <div class="column">
+      <div class="column-label wrong">НЕВЕРНО</div>
+      <div class="stack" id="wrongStack"></div>
+    </div>
+    <div class="column">
+      <div class="column-label">📖</div>
+      <div class="stack stack-center" id="centerStack">
+        <div id="cardContainer" style="width:100%; height:100%; position:relative;"></div>
+        <div class="counters-row">
+          <div class="error-counter" id="errorCounter"><span id="errorCount">0</span> / <span id="totalQuestions">225</span></div>
+        </div>
+      </div>
+      <div class="remaining-counter" id="remainingCounter">Осталось: 225</div>
+    </div>
+    <div class="column">
+      <div class="column-label right">ВЕРНО</div>
+      <div class="stack" id="rightStack"></div>
+    </div>
+  </div>
+</div>
+<div class="coffee-overlay" id="coffeeOverlay">
+  <div class="coffee-emoji">☕</div>
+  <button class="coffee-btn" id="coffeeContinueBtn">Продолжить</button>
+</div>
+<div class="final-screen" id="finalScreen">
+  <div class="final-title" id="finalTitle"></div>
+  <div class="final-subtitle" id="finalSubtitle"></div>
+  <div class="final-emoji" id="finalEmoji"></div>
+  <button class="final-btn" id="restartBtnFinal">Играть снова</button>
+</div>
+
+<script>
+  // ============================================================
+  // SERVICE WORKER + PWA
+  // ============================================================
+  (function() {
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+        self.addEventListener('install', event => {
+          event.waitUntil(
+            caches.open('udarenia-v1').then(cache => {
+              return cache.addAll(['/']);
+            })
+          );
+        });
+        self.addEventListener('fetch', event => {
+          event.respondWith(
+            caches.match(event.request).then(response => {
+              return response || fetch(event.request);
+            })
+          );
+        });
+        self.addEventListener('activate', event => {
+          event.waitUntil(
+            caches.keys().then(keys => {
+              return Promise.all(
+                keys.filter(key => key !== 'udarenia-v1').map(key => caches.delete(key))
+              );
+            })
+          );
+        });
+      `;
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      const swUrl = URL.createObjectURL(blob);
+      navigator.serviceWorker.register(swUrl, { scope: '/' })
+        .then(() => console.log('Service Worker registered'))
+        .catch(err => console.warn('SW registration failed:', err));
+    }
+  })();
+
+  // ============================================================
+  // FULLSCREEN (только для смартфонов, ширина < 650px)
+  // ============================================================
+  (function() {
+    const isMobile = window.innerWidth < 650;
+    const exitBtn = document.getElementById('exitFullscreenBtn');
+
+    function requestFullscreen() {
+      const el = document.documentElement;
+      if (el.requestFullscreen) {
+        el.requestFullscreen().catch(() => {});
+      } else if (el.webkitRequestFullscreen) {
+        el.webkitRequestFullscreen();
+      } else if (el.msRequestFullscreen) {
+        el.msRequestFullscreen();
+      }
+    }
+
+    function exitFullscreen() {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      } else if (document.webkitFullscreenElement) {
+        document.webkitExitFullscreen();
+      } else if (document.msFullscreenElement) {
+        document.msExitFullscreen();
+      }
+    }
+
+    if (isMobile) {
+      setTimeout(requestFullscreen, 300);
+      document.addEventListener('click', function handler() {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          requestFullscreen();
+        }
+        document.removeEventListener('click', handler);
+      });
+      exitBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        exitFullscreen();
+      });
+    } else {
+      exitBtn.style.display = 'none';
+    }
+  })();
+
+  // ============================================================
+  // МАССИВ СЛОВ (полный, 225 записей)
+  // ============================================================
+  const levelWords = [
+    { variants: ["аэропОрты", "аэропортЫ"], correct: 0, bothOk: false },
+    { variants: ["бАнты", "бантЫ"], correct: 0, bothOk: false },
+    { variants: ["бухгАлтеров", "бухгалтерОв"], correct: 0, bothOk: false },
+    { variants: ["вероисповЕдание", "вероисповедАние"], correct: 0, bothOk: false },
+    { variants: ["водопровОд", "водопрОвод"], correct: 0, bothOk: false },
+    { variants: ["газопровОд", "газопрОвод"], correct: 0, bothOk: false },
+    { variants: ["граждАнство", "грАжданство"], correct: 0, bothOk: false },
+    { variants: ["дефИс", "дЕфис"], correct: 0, bothOk: false },
+    { variants: ["дешевИзна", "дешевизнА"], correct: 0, bothOk: false },
+    { variants: ["диспансЕр", "диспАнсер"], correct: 0, bothOk: false },
+    { variants: ["договОр", "дОговор"], correct: 0, bothOk: false },
+    { variants: ["договорЁнность", "договОренность"], correct: 0, bothOk: false },
+    { variants: ["докумЕнт", "докУмент"], correct: 0, bothOk: false },
+    { variants: ["досУг", "дОсуг"], correct: 0, bothOk: false },
+    { variants: ["еретИк", "ерЕтик"], correct: 0, bothOk: false },
+    { variants: ["жалюзИ", "жАлюзи"], correct: 0, bothOk: false },
+    { variants: ["знАчимость", "значИмость"], correct: 0, bothOk: false },
+    { variants: ["Иконопись", "икОнопись"], correct: 0, bothOk: false },
+    { variants: ["Иксы", "иксЫ"], correct: 0, bothOk: false },
+    { variants: ["каталОг", "катАлог"], correct: 0, bothOk: false },
+    { variants: ["квартАл", "квАртал"], correct: 0, bothOk: false },
+    { variants: ["киломЕтр", "килОметр"], correct: 0, bothOk: false },
+    { variants: ["кОнусов", "конусОв"], correct: 0, bothOk: false },
+    { variants: ["корЫсть", "кОрысть"], correct: 0, bothOk: false },
+    { variants: ["крАны", "кранЫ"], correct: 0, bothOk: false },
+    { variants: ["кремЕнь", "крЕмень"], correct: 0, bothOk: false },
+    { variants: ["лЕкторов", "лекторОв"], correct: 0, bothOk: false },
+    { variants: ["лыжнЯ", "лЫжня"], correct: 0, bothOk: false },
+    { variants: ["мЕстностей", "местностЕй"], correct: 0, bothOk: false },
+    { variants: ["намЕрение", "намерЕние"], correct: 0, bothOk: false },
+    { variants: ["нЕдруг", "недрУг"], correct: 0, bothOk: false },
+    { variants: ["недУг", "нЕдуг"], correct: 0, bothOk: false },
+    { variants: ["некролОг", "некрОлог"], correct: 0, bothOk: false },
+    { variants: ["нЕнависть", "ненАвисть"], correct: 0, bothOk: false },
+    { variants: ["нефтепровОд", "нефтепрОвод"], correct: 0, bothOk: false },
+    { variants: ["новостЕй", "нОвостей"], correct: 0, bothOk: false },
+    { variants: ["Отрочество", "отрОчество"], correct: 0, bothOk: false },
+    { variants: ["партЕр", "пАртер"], correct: 0, bothOk: false },
+    { variants: ["портфЕль", "пОртфель"], correct: 0, bothOk: false },
+    { variants: ["придАное", "прИданое"], correct: 0, bothOk: false },
+    { variants: ["призЫв", "прИзыв"], correct: 0, bothOk: false },
+    { variants: ["свЁкла", "свеклА"], correct: 0, bothOk: false },
+    { variants: ["созЫв", "сОзыв"], correct: 0, bothOk: false },
+    { variants: ["сосредотОчение", "сосредоточЕние"], correct: 0, bothOk: false },
+    { variants: ["срЕдства", "средствА"], correct: 0, bothOk: false },
+    { variants: ["стАтуя", "статУя"], correct: 0, bothOk: false },
+    { variants: ["столЯр", "стОляр"], correct: 0, bothOk: false },
+    { variants: ["тамОжня", "тАможня"], correct: 0, bothOk: false },
+    { variants: ["тОрты", "тортЫ"], correct: 0, bothOk: false },
+    { variants: ["тУфля", "туфлЯ"], correct: 0, bothOk: false },
+    { variants: ["цемЕнт", "цЕмент"], correct: 0, bothOk: false },
+    { variants: ["цЕнтнер", "центнЕр"], correct: 0, bothOk: false },
+    { variants: ["цепОчка", "цЕпочка"], correct: 0, bothOk: false },
+    { variants: ["шАрфы", "шарфЫ"], correct: 0, bothOk: false },
+    { variants: ["шофЁр", "шОфер"], correct: 0, bothOk: false },
+    { variants: ["экспЕрт", "Эксперт"], correct: 0, bothOk: false },
+    { variants: ["щавЕль", "щАвель"], correct: 0, bothOk: false },
+    { variants: ["баловАть", "бАловать"], correct: 0, bothOk: false },
+    { variants: ["избалОванный", "избАлованный"], correct: 0, bothOk: false },
+    { variants: ["Августовский", "августОвский"], correct: 0, bothOk: false },
+    { variants: ["вернА", "вЕрна"], correct: 0, bothOk: false },
+    { variants: ["знАчимый", "значИмый"], correct: 0, bothOk: false },
+    { variants: ["красИвее", "красивЕе"], correct: 0, bothOk: false },
+    { variants: ["красИвейший", "красивЕйший"], correct: 0, bothOk: false },
+    { variants: ["кУхонный", "кухОнный"], correct: 0, bothOk: false },
+    { variants: ["ловкА", "лОвка"], correct: 0, bothOk: false },
+    { variants: ["мозаИчный", "мозАичный"], correct: 0, bothOk: false },
+    { variants: ["оптОвый", "Оптовый"], correct: 0, bothOk: false },
+    { variants: ["прозорлИвый", "прозОрливый"], correct: 0, bothOk: false },
+    { variants: ["прозорлИва", "прозОрлива"], correct: 0, bothOk: false },
+    { variants: ["слИвовый", "сливОвый"], correct: 0, bothOk: false },
+    { variants: ["украИнский", "укрАинский"], correct: 0, bothOk: false },
+    { variants: ["бралА", "брАла"], correct: 0, bothOk: false },
+    { variants: ["бралАсь", "брАлась"], correct: 0, bothOk: false },
+    { variants: ["взялА", "взЯла"], correct: 0, bothOk: false },
+    { variants: ["взялАсь", "взЯлась"], correct: 0, bothOk: false },
+    { variants: ["влилАсь", "влИлась"], correct: 0, bothOk: false },
+    { variants: ["ворвалАсь", "ворвАлась"], correct: 0, bothOk: false },
+    { variants: ["воссоздалА", "воссоздАла"], correct: 0, bothOk: false },
+    { variants: ["вручИт", "врУчит"], correct: 0, bothOk: false },
+    { variants: ["гналА", "гнАла"], correct: 0, bothOk: false },
+    { variants: ["гналАсь", "гнАлась"], correct: 0, bothOk: false },
+    { variants: ["добралАсь", "добрАлась"], correct: 0, bothOk: false },
+    { variants: ["дождалАсь", "дождАлась"], correct: 0, bothOk: false },
+    { variants: ["дозИровать", "дозировАть"], correct: 0, bothOk: false },
+    { variants: ["ждалА", "ждАла"], correct: 0, bothOk: false },
+    { variants: ["закУпорить", "закупОрить"], correct: 0, bothOk: false },
+    { variants: ["занЯть", "зАнять"], correct: 0, bothOk: false },
+    { variants: ["зАнял", "занЯл"], correct: 0, bothOk: false },
+    { variants: ["занялА", "зАняла"], correct: 0, bothOk: false },
+    { variants: ["зАняли", "занЯли"], correct: 0, bothOk: false },
+    { variants: ["заперлА", "зАперла"], correct: 0, bothOk: false },
+    { variants: ["запломбировАть", "запломбИровать"], correct: 0, bothOk: false },
+    { variants: ["защемИт", "защЕмит"], correct: 0, bothOk: false },
+    { variants: ["звалА", "звАла"], correct: 0, bothOk: false },
+    { variants: ["звонИт", "звОнит"], correct: 0, bothOk: false },
+    { variants: ["кАшлянуть", "кашлянУть"], correct: 0, bothOk: false },
+    { variants: ["клАла", "клалА"], correct: 0, bothOk: false },
+    { variants: ["клЕить", "клеИть"], correct: 0, bothOk: false },
+    { variants: ["крАлась", "кралАсь"], correct: 0, bothOk: false },
+    { variants: ["кровоточИть", "кровотОчить"], correct: 0, bothOk: false },
+    { variants: ["лгалА", "лгАла"], correct: 0, bothOk: false },
+    { variants: ["лилАсь", "лИлась"], correct: 0, bothOk: false },
+    { variants: ["наделИт", "надЕлит"], correct: 0, bothOk: false },
+    { variants: ["надорвалА", "надорвАла"], correct: 0, bothOk: false },
+    { variants: ["надорвалАсь", "надорвАлась"], correct: 0, bothOk: false },
+    { variants: ["назвалА", "назвАла"], correct: 0, bothOk: false },
+    { variants: ["назвалАсь", "назвАлась"], correct: 0, bothOk: false },
+    { variants: ["апострОф", "апОстроф"], correct: 0, bothOk: false },
+    { variants: ["нарвалА", "нарвАла"], correct: 0, bothOk: false },
+    { variants: ["начАть", "нАчать"], correct: 0, bothOk: false },
+    { variants: ["нАчал", "начАл"], correct: 0, bothOk: false },
+    { variants: ["началА", "нАчала"], correct: 0, bothOk: false },
+    { variants: ["нАчали", "начАли"], correct: 0, bothOk: false },
+    { variants: ["облегчИть", "облЕгчить"], correct: 0, bothOk: false },
+    { variants: ["облегчИт", "облЕгчит"], correct: 0, bothOk: false },
+    { variants: ["облилА", "облИла"], correct: 0, bothOk: false },
+    { variants: ["облилАсь", "облИлась"], correct: 0, bothOk: false },
+    { variants: ["обнялА", "обнЯла"], correct: 0, bothOk: false },
+    { variants: ["обнялАсь", "обнЯлась"], correct: 0, bothOk: false },
+    { variants: ["обогналА", "обогнАла"], correct: 0, bothOk: false },
+    { variants: ["ободралА", "ободрАла"], correct: 0, bothOk: false },
+    { variants: ["ободрИть", "обОдрить"], correct: 0, bothOk: false },
+    { variants: ["ободрИт", "обОдрит"], correct: 0, bothOk: false },
+    { variants: ["обострИть", "обОстрить"], correct: 0, bothOk: false },
+    { variants: ["одолжИть", "одОлжить"], correct: 0, bothOk: false },
+    { variants: ["одолжИт", "одОлжит"], correct: 0, bothOk: false },
+    { variants: ["озлОбить", "озлобИть"], correct: 0, bothOk: false },
+    { variants: ["жерлО", "жЕрло"], correct: 0, bothOk: false },
+    { variants: ["окружИт", "окрУжит"], correct: 0, bothOk: false },
+    { variants: ["опОшлить", "опошлИть"], correct: 0, bothOk: false },
+    { variants: ["отбылА", "отбЫла"], correct: 0, bothOk: false },
+    { variants: ["отдалА", "отдАла"], correct: 0, bothOk: false },
+    { variants: ["откУпорить", "откупОрить"], correct: 0, bothOk: false },
+    { variants: ["отозвалА", "отозвАла"], correct: 0, bothOk: false },
+    { variants: ["перезвонИт", "перезвОнит"], correct: 0, bothOk: false },
+    { variants: ["перелилА", "перелИла"], correct: 0, bothOk: false },
+    { variants: ["плодоносИть", "плодонОсить"], correct: 0, bothOk: false },
+    { variants: ["пломбировАть", "пломбИровать"], correct: 0, bothOk: false },
+    { variants: ["повторИт", "повтОрит"], correct: 0, bothOk: false },
+    { variants: ["позвалА", "позвАла"], correct: 0, bothOk: false },
+    { variants: ["позвонИт", "позвОнит"], correct: 0, bothOk: false },
+    { variants: ["полилА", "полИла"], correct: 0, bothOk: false },
+    { variants: ["положИть", "полОжить"], correct: 0, bothOk: false },
+    { variants: ["положИл", "полОжил"], correct: 0, bothOk: false },
+    { variants: ["понЯть", "пОнять"], correct: 0, bothOk: false },
+    { variants: ["понялА", "пОняла"], correct: 0, bothOk: false },
+    { variants: ["послАла", "послалА"], correct: 0, bothOk: false },
+    { variants: ["прибЫть", "прИбыть"], correct: 0, bothOk: false },
+    { variants: ["прИбыл", "прибЫл"], correct: 0, bothOk: false },
+    { variants: ["прибылА", "прИбыла"], correct: 0, bothOk: false },
+    { variants: ["прИбыли", "прибЫли"], correct: 0, bothOk: false, hint: "(они)" },
+    { variants: ["принЯть", "прИнять"], correct: 0, bothOk: false },
+    { variants: ["прИнял", "принЯл"], correct: 0, bothOk: false },
+    { variants: ["принялА", "прИняла"], correct: 0, bothOk: false },
+    { variants: ["прИняли", "принЯли"], correct: 0, bothOk: false },
+    { variants: ["рвалА", "рвАла"], correct: 0, bothOk: false },
+    { variants: ["сверлИт", "свЕрлит"], correct: 0, bothOk: false },
+    { variants: ["снялА", "снЯла"], correct: 0, bothOk: false },
+    { variants: ["создалА", "создАла"], correct: 0, bothOk: false },
+    { variants: ["сорвалА", "сорвАла"], correct: 0, bothOk: false },
+    { variants: ["убралА", "убрАла"], correct: 0, bothOk: false },
+    { variants: ["углубИть", "углУбить"], correct: 0, bothOk: false },
+    { variants: ["укрепИт", "укрЕпит"], correct: 0, bothOk: false },
+    { variants: ["чЕрпать", "черпАть"], correct: 0, bothOk: false },
+    { variants: ["щемИт", "щЕмит"], correct: 0, bothOk: false },
+    { variants: ["щЁлкать", "щелкАть"], correct: 0, bothOk: false },
+    { variants: ["довезЁнный", "довЕзенный"], correct: 0, bothOk: false },
+    { variants: ["зАгнутый", "загнУтый"], correct: 0, bothOk: false },
+    { variants: ["зАнятый", "занЯтый"], correct: 0, bothOk: false },
+    { variants: ["занятА", "зАнята"], correct: 0, bothOk: false },
+    { variants: ["зАпертый", "запЁртый"], correct: 0, bothOk: false },
+    { variants: ["заселЁнный", "засЕленный"], correct: 0, bothOk: false },
+    { variants: ["заселенА", "засЕлена"], correct: 0, bothOk: false },
+    { variants: ["кровоточАщий", "кровотОчащий"], correct: 0, bothOk: false },
+    { variants: ["нажИвший", "нАживший"], correct: 0, bothOk: false },
+    { variants: ["налИвший", "нАливший"], correct: 0, bothOk: false },
+    { variants: ["нанЯвшийся", "нАнявшийся"], correct: 0, bothOk: false },
+    { variants: ["начАвший", "нАчавший"], correct: 0, bothOk: false },
+    { variants: ["нАчатый", "начАтый"], correct: 0, bothOk: false },
+    { variants: ["низведЁнный", "низвЕденный"], correct: 0, bothOk: false },
+    { variants: ["облегчЁнный", "облЕгченный"], correct: 0, bothOk: false },
+    { variants: ["ободрЁнный", "обОдренный"], correct: 0, bothOk: false },
+    { variants: ["обострЁнный", "обОстренный"], correct: 0, bothOk: false },
+    { variants: ["отключЁнный", "отклЮченный"], correct: 0, bothOk: false },
+    { variants: ["повторЁнный", "повтОренный"], correct: 0, bothOk: false },
+    { variants: ["поделЁнный", "подЕленный"], correct: 0, bothOk: false },
+    { variants: ["понЯвший", "пОнявший"], correct: 0, bothOk: false },
+    { variants: ["прИнятый", "принЯтый"], correct: 0, bothOk: false },
+    { variants: ["принятА", "прИнята"], correct: 0, bothOk: false },
+    { variants: ["приручЁнный", "прирУченный"], correct: 0, bothOk: false },
+    { variants: ["прожИвший", "прОживший"], correct: 0, bothOk: false },
+    { variants: ["снятА", "снЯта"], correct: 0, bothOk: false },
+    { variants: ["сОгнутый", "согнУтый"], correct: 0, bothOk: false },
+    { variants: ["углублЁнный", "углУбленный"], correct: 0, bothOk: false },
+    { variants: ["закУпорив", "закупОрив"], correct: 0, bothOk: false },
+    { variants: ["начАв", "нАчав"], correct: 0, bothOk: false },
+    { variants: ["начАвшись", "нАчавшись"], correct: 0, bothOk: false },
+    { variants: ["отдАв", "Отдав"], correct: 0, bothOk: false },
+    { variants: ["понЯв", "пОняв"], correct: 0, bothOk: false },
+    { variants: ["прибЫв", "прИбыв"], correct: 0, bothOk: false },
+    { variants: ["создАв", "сОздав"], correct: 0, bothOk: false },
+    { variants: ["вОвремя", "воврЕмя"], correct: 0, bothOk: false },
+    { variants: ["дОверху", "довЕрху"], correct: 0, bothOk: false },
+    { variants: ["добелА", "дОбела"], correct: 0, bothOk: false },
+    { variants: ["докраснА", "дОкрасна"], correct: 0, bothOk: false },
+    { variants: ["донЕльзя", "дОнельзя"], correct: 0, bothOk: false },
+    { variants: ["дОнизу", "донИзу"], correct: 0, bothOk: false },
+    { variants: ["дОсуха", "досУха"], correct: 0, bothOk: false },
+    { variants: ["зАсветло", "засветлО"], correct: 0, bothOk: false },
+    { variants: ["надОлго", "нАдолго"], correct: 0, bothOk: false },
+    { variants: ["ненадОлго", "ненАдолго"], correct: 0, bothOk: false },
+    { variants: ["до скОльких", "до сколькИ"], correct: 0, bothOk: false },
+    { variants: ["тОтчас", "тотчАс"], correct: 0, bothOk: false },
+    { variants: ["подчАс", "пОдчас"], correct: 0, bothOk: false },
+    { variants: ["бОроду", "бородУ"], correct: 0, bothOk: false, hint: "(сбрить)" },
+    { variants: ["кремнЯ", "крЕмня"], correct: 0, bothOk: false, hint: "(нет)" },
+    { variants: ["сирОты", "сИроты"], correct: 0, bothOk: false, hint: "(они)" },
+    { variants: ["Отзыв", "отзЫв"], correct: 0, bothOk: false, hint: "(о книге)" },
+    { variants: ["отзЫв", "Отзыв"], correct: 0, bothOk: false, hint: "(посла из страны)" },
+    { variants: ["накренИтся", "накрЕнится"], correct: 0, bothOk: false, hint: "(катер)" },
+    { variants: ["дозвонИтся", "дозвОнится"], correct: 0, bothOk: false, hint: "(он)" },
+    { variants: ["освЕдомится", "осведомИтся"], correct: 0, bothOk: false, hint: "(он)" },
+    { variants: ["лОктя", "локтЯ"], correct: 0, bothOk: false, hint: "(левого)" },
+    { variants: ["нОгтя", "ногтЯ"], correct: 0, bothOk: false, hint: "(нет)" }
+  ];
+
+  // ============================================================
+  // ИГРОВАЯ ЛОГИКА
+  // ============================================================
+  let audioCtx = null;
+  function initAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+
+  function playCrack() {
+    if (!sfxEnabled) return;
+    try {
+      initAudio();
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, now);
+      osc.frequency.exponentialRampToValueAtTime(400, now + 0.08);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } catch(e) {}
+  }
+
+  function playApplause() {
+    if (!sfxEnabled) return;
+    try {
+      initAudio();
+      for (let i = 0; i < 12; i++) {
+        setTimeout(() => {
+          const bufferSize = audioCtx.sampleRate * 0.04;
+          const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let j = 0; j < bufferSize; j++) {
+            data[j] = (Math.random() * 2 - 1) * (1 - j / bufferSize);
+          }
+          const source = audioCtx.createBufferSource();
+          source.buffer = buffer;
+          const gain = audioCtx.createGain();
+          gain.gain.value = 0.08;
+          source.connect(gain);
+          gain.connect(audioCtx.destination);
+          source.start();
+        }, i * 80);
+      }
+    } catch(e) {}
+  }
+
+  let sfxEnabled = true;
+  document.getElementById('sfxToggle').addEventListener('click', function() {
+    sfxEnabled = !sfxEnabled;
+    this.classList.toggle('off');
+    this.classList.toggle('sfx-off');
+    const icon = this.querySelector('.sound-icon');
+    if (sfxEnabled) {
+      icon.textContent = '🔊';
+      this.classList.remove('sfx-off');
+    } else {
+      icon.textContent = '🔇';
+      this.classList.add('sfx-off');
+    }
+  });
+
+  const coffeeOverlay = document.getElementById('coffeeOverlay');
+  document.getElementById('pauseBtn').addEventListener('click', function() {
+    coffeeOverlay.classList.toggle('show');
+  });
+  document.getElementById('coffeeContinueBtn').addEventListener('click', function() {
+    coffeeOverlay.classList.remove('show');
+  });
+  coffeeOverlay.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('show');
+  });
+
+  let currentWords = [];
+  let centerStack = [];
+  let wrongStack = [];
+  let rightStack = [];
+  let errorCount = 0;
+  let totalQuestions = 0;
+  let isAnimating = false;
+  let answered = false;
+
+  const cardContainer = document.getElementById('cardContainer');
+  const wrongStackEl = document.getElementById('wrongStack');
+  const rightStackEl = document.getElementById('rightStack');
+  const errorCountSpan = document.getElementById('errorCount');
+  const totalQuestionsSpan = document.getElementById('totalQuestions');
+  const remainingCounter = document.getElementById('remainingCounter');
+  const finalScreen = document.getElementById('finalScreen');
+  const finalTitle = document.getElementById('finalTitle');
+  const finalSubtitle = document.getElementById('finalSubtitle');
+  const finalEmoji = document.getElementById('finalEmoji');
+  const restartBtnFinal = document.getElementById('restartBtnFinal');
+  const restartBtnTop = document.getElementById('restartBtnTop');
+  const gameTable = document.getElementById('gameTable');
+
+  const permanentWrapper = document.createElement('div');
+  permanentWrapper.className = 'card-wrapper';
+  cardContainer.appendChild(permanentWrapper);
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function getFontSize(text) {
+    const lower = text.toLowerCase();
+    if (lower.includes('низвед') || lower.includes('прозорл') || lower.includes('повтор')) {
+      return '1.1rem';
+    }
+    if (lower === 'повторит') return '1.7rem';
+    if (lower === 'прозорлива') return '1.6rem';
+    const letters = text.replace(/[^а-яёa-z]/gi, '').length;
+    if (letters <= 5) return '1.9rem';
+    if (letters <= 7) return '1.6rem';
+    if (letters <= 9) return '1.5rem';
+    if (letters <= 13) return '1.35rem';
+    return '1.15rem';
+  }
+
+  function updateRemaining() {
+    const remaining = centerStack.length + 1;
+    remainingCounter.textContent = 'Осталось: ' + remaining;
+  }
+
+  function initGame() {
+    permanentWrapper.innerHTML = '';
+    currentWords = levelWords.slice();
+    shuffle(currentWords);
+    totalQuestions = currentWords.length;
+    totalQuestionsSpan.textContent = totalQuestions;
+    centerStack = currentWords.map((_, i) => i);
+    wrongStack = [];
+    rightStack = [];
+    errorCount = 0;
+    answered = false;
+    renderStacks();
+    finalScreen.style.display = 'none';
+    gameTable.style.display = 'flex';
+    showNextCard();
+  }
+
+  function updateCounters() {
+    errorCountSpan.textContent = errorCount;
+  }
+
+  function renderStacks() {
+    wrongStackEl.innerHTML = '';
+    rightStackEl.innerHTML = '';
+
+    if (wrongStack.length > 0) {
+      const entry = wrongStack[wrongStack.length - 1];
+      const displayText = entry.text;
+      const card = document.createElement('div');
+      card.className = 'stack-card';
+      const span = document.createElement('span');
+      span.className = 'wrong-word';
+      span.textContent = displayText;
+      card.appendChild(span);
+      wrongStackEl.appendChild(card);
+    }
+
+    if (rightStack.length > 0) {
+      const entry = rightStack[rightStack.length - 1];
+      const displayText = entry.text;
+      const card = document.createElement('div');
+      card.className = 'stack-card';
+      const span = document.createElement('span');
+      span.className = 'correct-word';
+      span.textContent = displayText;
+      card.appendChild(span);
+      rightStackEl.appendChild(card);
+    }
+
+    updateCounters();
+  }
+
+  function showNextCard() {
+    if (centerStack.length === 0) {
+      permanentWrapper.innerHTML = '';
+      remainingCounter.textContent = 'Осталось: 0';
+      showFinal();
+      return;
+    }
+    const idx = centerStack.shift();
+    const wordObj = currentWords[idx];
+    renderStacks();
+    answered = false;
+    updateRemaining();
+
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'card';
+
+    if (wordObj.hint) {
+      const hintDiv = document.createElement('div');
+      hintDiv.className = 'hint';
+      hintDiv.textContent = wordObj.hint;
+      if (wordObj.hint === '(посла из страны)') {
+        hintDiv.classList.add('small-hint');
+      }
+      cardDiv.appendChild(hintDiv);
+    }
+
+    const variants = wordObj.variants.slice();
+    const correctIndex = wordObj.correct;
+    if (Math.random() < 0.5) {
+      variants.reverse();
+    }
+    const newCorrectIndex = variants.indexOf(wordObj.variants[correctIndex]);
+
+    let maxLength = 0;
+    variants.forEach(v => {
+      const len = v.replace(/[^а-яёa-z]/gi, '').length;
+      if (len > maxLength) maxLength = len;
+    });
+    let fontSize = '1.1rem';
+    let isSpecial = false;
+    let isSpecific = false;
+    variants.forEach(v => {
+      const low = v.toLowerCase();
+      if (low.includes('низвед') || low.includes('прозорл') || low.includes('повтор')) isSpecial = true;
+      if (low === 'повторит' || low === 'прозорлива') isSpecific = true;
+    });
+    if (isSpecial) {
+      fontSize = '1.1rem';
+    } else if (isSpecific) {
+      let specificSize = '1.5rem';
+      variants.forEach(v => {
+        if (v.toLowerCase() === 'повторит') specificSize = '1.7rem';
+        if (v.toLowerCase() === 'прозорлива') specificSize = '1.6rem';
+      });
+      fontSize = specificSize;
+    } else {
+      if (maxLength <= 5) fontSize = '1.9rem';
+      else if (maxLength <= 7) fontSize = '1.6rem';
+      else if (maxLength <= 9) fontSize = '1.5rem';
+      else if (maxLength <= 13) fontSize = '1.35rem';
+      else fontSize = '1.15rem';
+    }
+
+    const variantsCol = document.createElement('div');
+    variantsCol.className = 'variants-col';
+
+    variants.forEach((variant, i) => {
+      const btn = document.createElement('div');
+      btn.className = 'variant-btn';
+      btn.style.fontSize = fontSize;
+      btn.textContent = variant;
+      btn.dataset.index = i;
+      btn.addEventListener('click', (e) => {
+        if (answered || isAnimating) return;
+        const selected = i;
+        const selectedText = variant;
+        if (selected === newCorrectIndex) {
+          btn.classList.add('correct');
+          moveCard(idx, 'right', cardDiv, selectedText);
+          answered = true;
+        } else {
+          btn.classList.add('wrong');
+          errorCount++;
+          updateCounters();
+          setTimeout(() => {
+            moveCard(idx, 'wrong', cardDiv, selectedText);
+          }, 20);
+          answered = true;
+        }
+      });
+      variantsCol.appendChild(btn);
+    });
+    cardDiv.appendChild(variantsCol);
+    permanentWrapper.innerHTML = '';
+    permanentWrapper.appendChild(cardDiv);
+  }
+
+  function moveCard(idx, target, cardEl, selectedText) {
+    if (isAnimating) return;
+    isAnimating = true;
+    playCrack();
+
+    if (target === 'right') {
+      rightStack.push({ idx, text: selectedText });
+    } else {
+      wrongStack.push({ idx, text: selectedText });
+    }
+    renderStacks();
+
+    const rect = cardEl.getBoundingClientRect();
+    const clone = document.createElement('div');
+    clone.className = 'flying';
+    clone.textContent = selectedText;
+    clone.style.left = rect.left + 'px';
+    clone.style.top = rect.top + 'px';
+    clone.style.width = rect.width + 'px';
+    clone.style.fontSize = getFontSize(selectedText);
+    document.body.appendChild(clone);
+
+    const targetEl = (target === 'right') ? rightStackEl : wrongStackEl;
+    const targetRect = targetEl.getBoundingClientRect();
+
+    const dx = targetRect.left + targetRect.width/2 - rect.left - rect.width/2;
+    const dy = targetRect.top + targetRect.height/2 - rect.top - rect.height/2;
+
+    requestAnimationFrame(() => {
+      clone.style.transform = `translate(${dx}px, ${dy}px)`;
+      clone.style.opacity = '1';
+    });
+
+    setTimeout(() => {
+      clone.remove();
+      permanentWrapper.innerHTML = '';
+      isAnimating = false;
+      showNextCard();
+    }, 550);
+  }
+
+  function showFinal() {
+    gameTable.style.display = 'none';
+    finalScreen.style.display = 'flex';
+    let title, subtitle, emoji;
+    const errors = errorCount;
+    if (errors === 0) {
+      title = '0 ошибок';
+      subtitle = 'Супер! Это круто!';
+      emoji = '🏆';
+      playApplause();
+      launchConfetti();
+    } else if (errors <= 3) {
+      title = `${errors} ${declension(errors)}`;
+      subtitle = 'Отлично! Почти идеально';
+      emoji = '🎓';
+      playApplause();
+    } else if (errors <= 7) {
+      title = `${errors} ${declension(errors)}`;
+      subtitle = 'Хорошо, но есть куда стремиться';
+      emoji = '👍';
+    } else if (errors <= 10) {
+      title = `${errors} ${declension(errors)}`;
+      subtitle = 'Неплохо, но ты точно можешь лучше!';
+      emoji = '📈';
+    } else if (errors <= 15) {
+      title = `${errors} ${declension(errors)}`;
+      subtitle = 'Надо подучить!';
+      emoji = '📚';
+    } else if (errors <= 25) {
+      title = `${errors} ${declension(errors)}`;
+      subtitle = 'Ты справишься! Я в тебя верю!';
+      emoji = '💪';
+    } else {
+      title = `${errors} ${declension(errors)}`;
+      subtitle = 'Упс! Давай ещё потренируемся';
+      emoji = '🏋️';
+    }
+    finalTitle.textContent = title;
+    finalSubtitle.textContent = subtitle;
+    finalEmoji.textContent = emoji;
+  }
+
+  function declension(n) {
+    const last = n % 10;
+    const lastTwo = n % 100;
+    if (lastTwo >= 11 && lastTwo <= 19) return 'ошибок';
+    if (last === 1) return 'ошибка';
+    if (last >= 2 && last <= 4) return 'ошибки';
+    return 'ошибок';
+  }
+
+  function launchConfetti() {
+    const container = document.createElement('div');
+    container.className = 'confetti-container';
+    document.body.appendChild(container);
+    const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6bcb', '#ffb86b', '#a66cff'];
+    for (let i = 0; i < 150; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random() * 100 + '%';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.width = (Math.random() * 8 + 4) + 'px';
+      piece.style.height = (Math.random() * 8 + 4) + 'px';
+      piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      piece.style.animationDuration = (Math.random() * 3 + 2) + 's';
+      piece.style.animationDelay = (Math.random() * 3) + 's';
+      container.appendChild(piece);
+    }
+    setTimeout(() => container.remove(), 5000);
+  }
+
+  function restartGame() {
+    finalScreen.style.display = 'none';
+    gameTable.style.display = 'flex';
+    document.querySelectorAll('.confetti-container').forEach(el => el.remove());
+    initGame();
+  }
+
+  restartBtnFinal.addEventListener('click', restartGame);
+  restartBtnTop.addEventListener('click', restartGame);
+
+  initGame();
+</script>
+</body>
+</html>

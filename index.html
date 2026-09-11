@@ -308,9 +308,10 @@
 
     .counters-container {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
+      justify-content: center;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       margin-top: 4px;
       flex-shrink: 0;
       width: 100%;
@@ -323,7 +324,6 @@
       background: rgba(255,255,255,0.6);
       border-radius: 30px;
       height: 30px;
-      max-width: 200px;
       border: 1px solid rgba(46, 125, 50, 0.35);
       box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     }
@@ -347,8 +347,6 @@
       background: rgba(255,255,255,0.4);
       border-radius: 30px;
       border: 1px solid rgba(46, 125, 50, 0.35);
-      width: 100%;
-      max-width: 200px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     }
 
@@ -527,10 +525,10 @@
       padding: 2px 3px 4px;
       max-width: none;
     }
-    html.is-smartphone .exit-fullscreen { display: block; font-size: 1.1rem; top: 8px; right: 12px; z-index: 200; }
-    html.is-smartphone .game-title { font-size: 0.9rem; margin-bottom: 1px; letter-spacing: 1px; }
+    html.is-smartphone .exit-fullscreen { display: none !important; }
+    html.is-smartphone .game-title { font-size: 1.4rem; margin-bottom: 2px; letter-spacing: 1px; }
     html.is-smartphone .controls { gap: 3px; margin-bottom: 2px; }
-    html.is-smartphone .ctrl-btn { font-size: 0.45rem; padding: 1px 6px; border-width: 1px; }
+    html.is-smartphone .ctrl-btn { font-size: 0.5rem; padding: 1px 6px; border-width: 1px; }
     html.is-smartphone .table { gap: 1px; margin-top: 1px; }
     html.is-smartphone .column-label { font-size: 0.6rem; margin-bottom: 1px; }
     html.is-smartphone .column-label.wrong, html.is-smartphone .column-label.right { font-size: 0.7rem; letter-spacing: 1px; }
@@ -538,21 +536,21 @@
     html.is-smartphone .card { 
       max-width: 180px; 
       padding: 4px 3px; 
-      aspect-ratio: 5 / 6;
+      aspect-ratio: 5 / 5;
     }
     html.is-smartphone .stack-card { 
       max-width: 125px; 
       margin: 1px 0; 
-      aspect-ratio: 5 / 6;
+      aspect-ratio: 5 / 5;
     }
     html.is-smartphone .card .hint { font-size: 0.6rem; top: 16%; }
     html.is-smartphone .card .hint.small-hint { font-size: 0.55rem; }
-    html.is-smartphone .card .variants-col { gap: 1.1rem; margin-top: 0.6rem; }
+    html.is-smartphone .card .variants-col { gap: 1.35rem; margin-top: 0.6rem; }
     html.is-smartphone .card .variant-btn { font-size: 0.75rem; padding: 1px 1px; line-height: 1.1; }
-    html.is-smartphone .counters-container { gap: 1px; margin-top: 1px; }
-    html.is-smartphone .counters-row { height: 15px; padding: 1px 6px; max-width: 100px; }
+    html.is-smartphone .counters-container { gap: 4px; margin-top: 2px; flex-direction: row; }
+    html.is-smartphone .counters-row { height: 15px; padding: 1px 6px; }
     html.is-smartphone .error-counter { font-size: 0.5rem; }
-    html.is-smartphone .remaining-counter { font-size: 0.6rem; max-width: 100px; padding: 1px 6px; }
+    html.is-smartphone .remaining-counter { font-size: 0.6rem; padding: 1px 6px; }
     html.is-smartphone .stack-card { font-size: 0.45rem; padding: 3px 2px; }
     html.is-smartphone .flying { font-size: 0.55rem; padding: 2px 4px; }
     html.is-smartphone .final-screen .final-title { font-size: 1.4rem; }
@@ -668,7 +666,6 @@
     if (!isSmartphone) return;
 
     const htmlEl = document.documentElement;
-    const exitBtn = document.getElementById('exitFullscreenBtn');
 
     function requestFullscreen() {
       const el = document.documentElement;
@@ -678,16 +675,6 @@
         el.webkitRequestFullscreen();
       } else if (el.msRequestFullscreen) {
         el.msRequestFullscreen();
-      }
-    }
-
-    function exitFullscreen() {
-      if (document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {});
-      } else if (document.webkitFullscreenElement) {
-        document.webkitExitFullscreen();
-      } else if (document.msFullscreenElement) {
-        document.msExitFullscreen();
       }
     }
 
@@ -730,11 +717,6 @@
     });
 
     window.addEventListener('resize', syncCssRotate);
-
-    exitBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      exitFullscreen();
-    });
   })();
 
   // ============================================================
